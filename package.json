@@ -1,0 +1,17 @@
+{
+  "name": "brandtrics-poc",
+  "version": "0.0.1",
+  "description": "This project is bootstrapped with [Create Elm App](https://github.com/halfzebra/create-elm-app).",
+  "main": "src/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Logan Waite",
+  "license": "ISC",
+  "devDependencies": {
+    "create-elm-app": "^4.1.2"
+  }
+}
