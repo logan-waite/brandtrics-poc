@@ -7,10 +7,12 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Element exposing (Attribute, Element, alignLeft, alignRight, column, el, fill, height, link, padding, row, text, width)
+import Element exposing (Attribute, Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (Html)
+import Html.Attributes
 import UIHelpers exposing (borderWidth, textEl)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s, string)
@@ -92,10 +94,10 @@ view model =
 layout : Model -> Html Msg
 layout model =
     Element.layout
-        [ height fill, width fill ]
+        [ height fill, width fill, Background.color (rgb255 255 250 240) ]
     <|
         column
-            [ width fill ]
+            [ width fill, height fill ]
             [ header
             , featureScreen model.feature
             ]
@@ -105,10 +107,12 @@ header : Element Msg
 header =
     row
         [ width fill
+        , height (px 50)
         , padding 15
         , Border.widthEach { borderWidth | bottom = 2 }
+        , Background.color (rgb255 255 255 255)
         ]
-        [ textEl [ alignLeft, Font.bold ] "Brandtrics"
+        [ link [ alignLeft ] { url = "/", label = textEl [ Font.bold ] "Brandtrics" }
         , textEl [ alignRight ] "menu"
         ]
 
@@ -128,13 +132,30 @@ featureScreen feature =
 
 featureButton : String -> String -> Element Msg
 featureButton label url =
-    link [ padding 50 ] { url = url, label = textEl [] label }
+    link
+        [ height (px 150)
+        , width (px 150)
+        , Border.width 1
+        , Background.color (rgb255 255 255 255)
+        , Element.htmlAttribute (Html.Attributes.style "marginLeft" "auto")
+        , Element.htmlAttribute (Html.Attributes.style "marginRight" "auto")
+        ]
+        { url = url
+        , label =
+            Element.paragraph
+                [ Font.center ]
+                [ textEl [] label ]
+        }
 
 
 dashboard : Element Msg
 dashboard =
     Element.wrappedRow
-        []
+        [ Element.spacing 50
+        , Element.centerX
+        , Element.centerY
+        , width (fill |> Element.maximum 500)
+        ]
         [ featureButton "Export Style Guide" "/export"
         , featureButton "Edit Brand" "/edit"
         ]
