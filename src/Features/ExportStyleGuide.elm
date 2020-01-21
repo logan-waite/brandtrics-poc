@@ -1,4 +1,4 @@
-module Dashboard exposing (..)
+module Features.ExportStyleGuide exposing (..)
 
 import Element exposing (Element)
 import UIHelpers exposing (textEl)
@@ -19,4 +19,4 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
-    textEl [] "Dashboard Screen"
+    textEl [] "Export Stylesheet Screen"
