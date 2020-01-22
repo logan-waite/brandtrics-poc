@@ -1,4 +1,4 @@
-module UIHelpers exposing (borderWidth, textEl)
+module UI.Helpers exposing (borderWidth, textEl)
 
 import Element exposing (Attribute, Element, el, text)
 

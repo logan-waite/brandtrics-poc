@@ -10,10 +10,13 @@ import Browser.Navigation as Nav
 import Element exposing (Attribute, Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events as Events
 import Element.Font as Font
+import Element.Region as Region
 import Html exposing (Html)
 import Html.Attributes
-import UIHelpers exposing (borderWidth, textEl)
+import UI.Colors as Colors
+import UI.Helpers exposing (borderWidth, textEl)
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
@@ -25,6 +28,7 @@ import Url.Parser as Parser exposing ((</>), Parser, s, string)
 type alias Model =
     { feature : Feature
     , key : Nav.Key
+    , menuOpen : Bool
     }
 
 
@@ -36,7 +40,15 @@ type Feature
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { feature = urlToFeature url, key = key }, Cmd.none )
+    ( initialModel url key, Cmd.none )
+
+
+initialModel : Url -> Nav.Key -> Model
+initialModel url key =
+    { feature = urlToFeature url
+    , key = key
+    , menuOpen = False
+    }
 
 
 urlToFeature : Url -> Feature
@@ -61,6 +73,7 @@ parser =
 type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
+    | ShowMenu
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -75,7 +88,10 @@ update msg model =
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
         ChangedUrl url ->
-            ( { model | feature = urlToFeature url }, Cmd.none )
+            ( { model | feature = urlToFeature url, menuOpen = False }, Cmd.none )
+
+        ShowMenu ->
+            ( { model | menuOpen = not model.menuOpen }, Cmd.none )
 
 
 
@@ -99,7 +115,14 @@ layout model =
         column
             [ width fill, height fill ]
             [ header
-            , featureScreen model.feature
+            , Element.el
+                [ height fill
+                , width fill
+                , Element.onRight (menu model.menuOpen)
+                ]
+                (featureScreen
+                    model.feature
+                )
             ]
 
 
@@ -110,11 +133,47 @@ header =
         , height (px 50)
         , padding 15
         , Border.widthEach { borderWidth | bottom = 2 }
-        , Background.color (rgb255 255 255 255)
+        , Background.color Colors.white
         ]
         [ link [ alignLeft ] { url = "/", label = textEl [ Font.bold ] "Brandtrics" }
-        , textEl [ alignRight ] "menu"
+        , textEl
+            [ alignRight
+            , Events.onClick ShowMenu
+            ]
+            "menu"
         ]
+
+
+menu : Bool -> Element Msg
+menu menuOpen =
+    if menuOpen then
+        column
+            [ Region.navigation
+            , Background.color Colors.white
+            , padding 15
+            , width (px 250)
+            , Element.moveLeft 250
+            , Border.widthEach { borderWidth | left = 2 }
+            , height fill
+            , alignRight
+            ]
+            [ navLink "/" "Dashboard"
+            , navLink "/edit" "Edit Brand"
+            , navLink "/export" "Export Style Guide"
+            ]
+
+    else
+        Element.none
+
+
+navLink : String -> String -> Element Msg
+navLink url label =
+    link
+        [ Font.center
+        , width fill
+        , padding 10
+        ]
+        { url = url, label = text label }
 
 
 featureScreen : Feature -> Element Msg
@@ -156,8 +215,8 @@ dashboard =
         , Element.centerY
         , width (fill |> Element.maximum 500)
         ]
-        [ featureButton "Export Style Guide" "/export"
-        , featureButton "Edit Brand" "/edit"
+        [ featureButton "Edit Brand" "/edit"
+        , featureButton "Export Style Guide" "/export"
         ]
 
 
