@@ -2,8 +2,6 @@ module Main exposing (..)
 
 -- import Element.Input as Input
 -- import Element.Lazy exposing (lazy)
--- import Features.EditBrand
--- import Features.ExportStyleGuide
 
 import Browser
 import Browser.Navigation as Nav
@@ -13,6 +11,7 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
+import Features.EditBrand
 import Html exposing (Html)
 import Html.Attributes
 import UI.Colors as Colors
@@ -34,7 +33,11 @@ type alias Model =
 
 type Feature
     = Dashboard
-    | ExportStyleGuide
+    | EditBrandFeature Features.EditBrand.Model
+
+
+type Route
+    = Root
     | EditBrand
 
 
@@ -53,16 +56,18 @@ initialModel url key =
 
 urlToFeature : Url -> Feature
 urlToFeature url =
-    Parser.parse parser url
-        |> Maybe.withDefault Dashboard
+    case Parser.parse parser url of
+        Just EditBrand ->
+            EditBrandFeature {}
+
+        _ ->
+            Dashboard
 
 
-parser : Parser (Feature -> a) a
+parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
-        [ Parser.map Dashboard Parser.top
-        , Parser.map EditBrand (s "edit")
-        , Parser.map ExportStyleGuide (s "export")
+        [ Parser.map EditBrand (s "edit")
         ]
 
 
@@ -74,6 +79,7 @@ type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
     | ShowMenu
+    | GotEditBrandMsg Features.EditBrand.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,6 +98,21 @@ update msg model =
 
         ShowMenu ->
             ( { model | menuOpen = not model.menuOpen }, Cmd.none )
+
+        GotEditBrandMsg editBrandMsg ->
+            case model.feature of
+                EditBrandFeature editBrandModel ->
+                    toEditBrand model (Features.EditBrand.update editBrandMsg editBrandModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
+toEditBrand model ( editBrand, cmd ) =
+    ( { model | feature = EditBrandFeature editBrand }
+    , Cmd.map GotEditBrandMsg cmd
+    )
 
 
 
@@ -121,7 +142,7 @@ layout model =
                 , Element.onRight (menu model.menuOpen)
                 ]
                 (featureScreen
-                    model.feature
+                    model
                 )
             ]
 
@@ -176,14 +197,12 @@ navLink url label =
         { url = url, label = text label }
 
 
-featureScreen : Feature -> Element Msg
-featureScreen feature =
-    case feature of
-        ExportStyleGuide ->
-            textEl [] "Export Style Guide"
-
-        EditBrand ->
-            textEl [] "Edit Brand"
+featureScreen : Model -> Element Msg
+featureScreen model =
+    case model.feature of
+        EditBrandFeature editBrandModel ->
+            Features.EditBrand.view editBrandModel
+                |> Element.map GotEditBrandMsg
 
         Dashboard ->
             dashboard
@@ -195,7 +214,7 @@ featureButton label url =
         [ height (px 150)
         , width (px 150)
         , Border.width 1
-        , Background.color (rgb255 255 255 255)
+        , Background.color Colors.background
         , Element.htmlAttribute (Html.Attributes.style "marginLeft" "auto")
         , Element.htmlAttribute (Html.Attributes.style "marginRight" "auto")
         ]
