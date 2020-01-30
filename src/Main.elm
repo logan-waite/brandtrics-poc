@@ -5,18 +5,20 @@ module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Element exposing (Attribute, Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
+import Element exposing (Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
 import Features.EditBrand
+import Features.Login
 import Html exposing (Html)
 import Html.Attributes
 import UI.Colors as Colors
 import UI.Helpers exposing (borderWidth, textEl)
 import Url exposing (Url)
+import Url.Builder as Builder exposing (relative)
 import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
 
@@ -25,49 +27,94 @@ import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
 
 type alias Model =
-    { feature : Feature
+    { page : Page
     , key : Nav.Key
     , menuOpen : Bool
+    , user : Maybe User
     }
 
 
-type Feature
+type alias User =
+    { name : String }
+
+
+type Page
     = Dashboard
-    | EditBrandFeature Features.EditBrand.Model
+    | LoginPage
+    | RegisterPage
+    | EditBrandPage Features.EditBrand.Model
 
 
 type Route
-    = Root
+    = Top
+    | Login
+    | Register
     | EditBrand
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( initialModel url key, Cmd.none )
+    let
+        user =
+            Just { name = "joe" }
+    in
+    ( initialModel url key user, checkLogin key user url )
 
 
-initialModel : Url -> Nav.Key -> Model
-initialModel url key =
-    { feature = urlToFeature url
+initialModel : Url -> Nav.Key -> Maybe User -> Model
+initialModel url key user =
+    { page = urlToPage url
     , key = key
     , menuOpen = False
+    , user = user
     }
 
 
-urlToFeature : Url -> Feature
-urlToFeature url =
+urlToPage : Url -> Page
+urlToPage url =
     case Parser.parse parser url of
-        Just EditBrand ->
-            EditBrandFeature {}
-
-        _ ->
+        Just Top ->
             Dashboard
+
+        Just EditBrand ->
+            EditBrandPage {}
+
+        Just Login ->
+            LoginPage
+
+        Just Register ->
+            RegisterPage
+
+        Nothing ->
+            Dashboard
+
+
+checkLogin : Nav.Key -> Maybe User -> Url -> Cmd Msg
+checkLogin key user url =
+    let
+        route : Maybe Route
+        route =
+            Parser.parse parser url
+    in
+    if user == Nothing && not (List.member route externalRoutes) then
+        Nav.pushUrl key (Builder.relative [ "login" ] [])
+
+    else
+        Cmd.none
+
+
+externalRoutes : List (Maybe Route)
+externalRoutes =
+    [ Just Login, Just Register ]
 
 
 parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
-        [ Parser.map EditBrand (s "edit")
+        [ Parser.map Top Parser.top
+        , Parser.map Login (s "login")
+        , Parser.map Register (s "register")
+        , Parser.map EditBrand (s "edit")
         ]
 
 
@@ -94,14 +141,14 @@ update msg model =
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
         ChangedUrl url ->
-            ( { model | feature = urlToFeature url, menuOpen = False }, Cmd.none )
+            ( { model | page = urlToPage url, menuOpen = False }, checkLogin model.key model.user url )
 
         ShowMenu ->
             ( { model | menuOpen = not model.menuOpen }, Cmd.none )
 
         GotEditBrandMsg editBrandMsg ->
-            case model.feature of
-                EditBrandFeature editBrandModel ->
+            case model.page of
+                EditBrandPage editBrandModel ->
                     toEditBrand model (Features.EditBrand.update editBrandMsg editBrandModel)
 
                 _ ->
@@ -110,7 +157,7 @@ update msg model =
 
 toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
 toEditBrand model ( editBrand, cmd ) =
-    ( { model | feature = EditBrandFeature editBrand }
+    ( { model | page = EditBrandPage editBrand }
     , Cmd.map GotEditBrandMsg cmd
     )
 
@@ -135,7 +182,11 @@ layout model =
     <|
         column
             [ width fill, height fill ]
-            [ header
+            [ if model.user /= Nothing then
+                header
+
+              else
+                Element.none
             , Element.el
                 [ height fill
                 , width fill
@@ -199,10 +250,16 @@ navLink url label =
 
 featureScreen : Model -> Element Msg
 featureScreen model =
-    case model.feature of
-        EditBrandFeature editBrandModel ->
+    case model.page of
+        EditBrandPage editBrandModel ->
             Features.EditBrand.view editBrandModel
                 |> Element.map GotEditBrandMsg
+
+        LoginPage ->
+            textEl [] "Login"
+
+        RegisterPage ->
+            textEl [] "Register"
 
         Dashboard ->
             dashboard
