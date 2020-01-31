@@ -12,9 +12,9 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
 import Features.EditBrand
-import Features.Login
 import Html exposing (Html)
 import Html.Attributes
+import Login
 import UI.Colors as Colors
 import UI.Helpers exposing (borderWidth, textEl)
 import Url exposing (Url)
@@ -40,7 +40,7 @@ type alias User =
 
 type Page
     = Dashboard
-    | LoginPage
+    | LoginPage Login.Model
     | RegisterPage
     | EditBrandPage Features.EditBrand.Model
 
@@ -56,7 +56,10 @@ init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         user =
-            Just { name = "joe" }
+            Nothing
+
+        -- user =
+        --     Just { name = "Joe" }
     in
     ( initialModel url key user, checkLogin key user url )
 
@@ -80,7 +83,7 @@ urlToPage url =
             EditBrandPage {}
 
         Just Login ->
-            LoginPage
+            LoginPage (Tuple.first Login.init)
 
         Just Register ->
             RegisterPage
@@ -127,6 +130,7 @@ type Msg
     | ChangedUrl Url
     | ShowMenu
     | GotEditBrandMsg Features.EditBrand.Msg
+    | GotLoginMsg Login.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -154,11 +158,26 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        GotLoginMsg loginMsg ->
+            case model.page of
+                LoginPage loginModel ->
+                    toLogin model (Login.update loginMsg loginModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
 toEditBrand model ( editBrand, cmd ) =
     ( { model | page = EditBrandPage editBrand }
     , Cmd.map GotEditBrandMsg cmd
+    )
+
+
+toLogin : Model -> ( Login.Model, Cmd Login.Msg ) -> ( Model, Cmd Msg )
+toLogin model ( login, cmd ) =
+    ( { model | page = LoginPage login }
+    , Cmd.map GotLoginMsg cmd
     )
 
 
@@ -255,8 +274,9 @@ featureScreen model =
             Features.EditBrand.view editBrandModel
                 |> Element.map GotEditBrandMsg
 
-        LoginPage ->
-            textEl [] "Login"
+        LoginPage loginModel ->
+            Login.view loginModel
+                |> Element.map GotLoginMsg
 
         RegisterPage ->
             textEl [] "Register"
