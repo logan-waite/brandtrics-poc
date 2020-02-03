@@ -73,4 +73,9 @@ view model =
             { onPress = Just Submit
             , label = "Submit"
             }
+        , Element.link
+            []
+            { url = "/register"
+            , label = textEl [] "Register"
+            }
         ]
