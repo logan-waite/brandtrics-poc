@@ -1,7 +1,12 @@
-module Features.EditBrand exposing (..)
+module Features.EditBrand exposing (Model, Msg, init, update, view)
 
 import Element exposing (Element)
-import UIHelpers exposing (textEl)
+import UI.Helpers exposing (textEl)
+
+
+init : ( Model, Cmd msg )
+init =
+    ( {}, Cmd.none )
 
 
 type alias Model =
@@ -19,4 +24,4 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
-    textEl [] "Edit Brand Screen"
+    textEl [] "Edit the Brand Screen"

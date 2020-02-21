@@ -1,7 +1,7 @@
-module Features.ExportStyleGuide exposing (..)
+module Features.ExportStyleGuide exposing (Model, Msg, update, view)
 
 import Element exposing (Element)
-import UIHelpers exposing (textEl)
+import UI.Helpers exposing (textEl)
 
 
 type alias Model =
