@@ -3,9 +3,10 @@ module Main exposing (..)
 -- import Element.Input as Input
 -- import Element.Lazy exposing (lazy)
 
+import Api
 import Browser
 import Browser.Navigation as Nav
-import Element exposing (Attribute, Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
+import Element exposing (Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events as Events
@@ -14,10 +15,18 @@ import Element.Region as Region
 import Features.EditBrand
 import Html exposing (Html)
 import Html.Attributes
+import Json.Decode as Decode exposing (Decoder, field)
+import Json.Decode.Pipeline exposing (custom, optional, required)
+import Ports
+import RemoteData exposing (WebData)
+import Session exposing (User)
+import UI.Buttons as Buttons
 import UI.Colors as Colors
 import UI.Helpers exposing (borderWidth, textEl)
+import UI.Typography as Typography
 import Url exposing (Url)
-import Url.Parser as Parser exposing ((</>), Parser, s, string)
+import Url.Builder as Builder exposing (relative)
+import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 
@@ -25,49 +34,76 @@ import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
 
 type alias Model =
-    { feature : Feature
+    { page : Page
     , key : Nav.Key
     , menuOpen : Bool
+    , user : Maybe User
     }
 
 
-type Feature
+type Page
     = Dashboard
-    | EditBrandFeature Features.EditBrand.Model
+    | EditBrandPage Features.EditBrand.Model
 
 
 type Route
-    = Root
+    = Top
     | EditBrand
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( initialModel url key, Cmd.none )
+    let
+        user =
+            Nothing
+    in
+    ( initialModel url key user, Cmd.none )
 
 
-initialModel : Url -> Nav.Key -> Model
-initialModel url key =
-    { feature = urlToFeature url
+initialModel : Url -> Nav.Key -> Maybe User -> Model
+initialModel url key user =
+    { page = urlToPage url
     , key = key
     , menuOpen = False
+    , user = user
     }
 
 
-urlToFeature : Url -> Feature
-urlToFeature url =
+urlToPage : Url -> Page
+urlToPage url =
     case Parser.parse parser url of
+        Just Top ->
+            Dashboard
+
         Just EditBrand ->
-            EditBrandFeature {}
+            EditBrandPage {}
+
+        Nothing ->
+            Dashboard
 
         _ ->
             Dashboard
 
 
+checkLogin : Nav.Key -> Maybe User -> Url -> Cmd Msg
+checkLogin key user url =
+    let
+        route : Maybe Route
+        route =
+            Parser.parse parser url
+    in
+    if user == Nothing then
+        Nav.pushUrl key (Builder.relative [ "login" ] [])
+
+    else
+        Cmd.none
+
+
 parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
-        [ Parser.map EditBrand (s "edit")
+        [ Parser.map Top Parser.top
+        , Parser.map EditBrand (s "edit")
         ]
 
 
@@ -80,6 +116,14 @@ type Msg
     | ChangedUrl Url
     | ShowMenu
     | GotEditBrandMsg Features.EditBrand.Msg
+    | OnError String
+    | OpenAuthModal
+    | UserLogin (Maybe User)
+    | UserLogout
+
+
+
+-- | CheckedAuth (WebData String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,23 +138,39 @@ update msg model =
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
         ChangedUrl url ->
-            ( { model | feature = urlToFeature url, menuOpen = False }, Cmd.none )
+            ( { model | page = urlToPage url, menuOpen = False }, checkLogin model.key model.user url )
 
         ShowMenu ->
             ( { model | menuOpen = not model.menuOpen }, Cmd.none )
 
         GotEditBrandMsg editBrandMsg ->
-            case model.feature of
-                EditBrandFeature editBrandModel ->
+            case model.page of
+                EditBrandPage editBrandModel ->
                     toEditBrand model (Features.EditBrand.update editBrandMsg editBrandModel)
 
                 _ ->
                     ( model, Cmd.none )
 
+        OpenAuthModal ->
+            ( model, Ports.openAuthModal () )
+
+        UserLogin user ->
+            let
+                _ =
+                    Debug.log "user" user
+            in
+            ( { model | user = user }, Cmd.none )
+
+        UserLogout ->
+            ( { model | user = Nothing }, Cmd.none )
+
+        OnError error ->
+            ( model, Cmd.none )
+
 
 toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
 toEditBrand model ( editBrand, cmd ) =
-    ( { model | feature = EditBrandFeature editBrand }
+    ( { model | page = EditBrandPage editBrand }
     , Cmd.map GotEditBrandMsg cmd
     )
 
@@ -135,16 +195,52 @@ layout model =
     <|
         column
             [ width fill, height fill ]
-            [ header
-            , Element.el
-                [ height fill
-                , width fill
-                , Element.onRight (menu model.menuOpen)
-                ]
-                (featureScreen
-                    model
-                )
+            (titleOrFeatureScreen model)
+
+
+titleOrFeatureScreen : Model -> List (Element Msg)
+titleOrFeatureScreen model =
+    if model.user == Nothing then
+        [ titleScreen ]
+
+    else
+        [ header
+        , Element.el
+            [ height fill
+            , width fill
+            , Element.onRight (menu model.menuOpen)
             ]
+            (featureScreen
+                model
+            )
+        ]
+
+
+titleScreen : Element Msg
+titleScreen =
+    Element.column
+        [ Element.centerX, height fill ]
+        [ textEl
+            [ Font.bold
+            , Font.size 50
+            , padding 25
+            ]
+            "Brandtrics"
+        , Element.column
+            [ width fill
+            , Element.centerY
+            , Element.moveUp 100
+            ]
+            [ Element.image
+                [ width (fill |> Element.maximum 200)
+                , Element.centerX
+                , padding 25
+                ]
+                { src = "/logo.svg", description = "Elm Lang Logo" }
+            , Typography.h1 [ Element.centerX ] "Your Company Name Here"
+            ]
+        , Buttons.default [ Element.centerX, Element.centerY ] { onPress = Just OpenAuthModal, label = "Login" }
+        ]
 
 
 header : Element Msg
@@ -181,6 +277,7 @@ menu menuOpen =
             [ navLink "/" "Dashboard"
             , navLink "/edit" "Edit Brand"
             , navLink "/export" "Export Style Guide"
+            , Buttons.default [ Element.centerX ] { onPress = Just OpenAuthModal, label = "Logout" }
             ]
 
     else
@@ -199,8 +296,8 @@ navLink url label =
 
 featureScreen : Model -> Element Msg
 featureScreen model =
-    case model.feature of
-        EditBrandFeature editBrandModel ->
+    case model.page of
+        EditBrandPage editBrandModel ->
             Features.EditBrand.view editBrandModel
                 |> Element.map GotEditBrandMsg
 
@@ -239,6 +336,58 @@ dashboard =
         ]
 
 
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.batch
+        [ Ports.userAuth (Decode.decodeValue authDecoder >> authType)
+        ]
+
+
+authType : Result Decode.Error AuthAction -> Msg
+authType result =
+    case result of
+        Ok value ->
+            case value.action of
+                "login" ->
+                    UserLogin value.payload
+
+                "logout" ->
+                    UserLogout
+
+                _ ->
+                    Debug.log "action error" "Unknown auth action taken"
+                        |> OnError
+
+        Err error ->
+            Debug.log "authType error" error
+                |> Decode.errorToString
+                |> OnError
+
+
+
+-- _ ->
+--     Cmd.none
+
+
+type alias AuthAction =
+    { action : String
+    , payload : Maybe User
+    }
+
+
+authDecoder : Decoder AuthAction
+authDecoder =
+    Decode.map2 AuthAction
+        (field "action" Decode.string)
+        (Decode.maybe (field "payload" userDecoder))
+
+
+userDecoder : Decoder User
+userDecoder =
+    Decode.succeed User
+        |> required "email" Decode.string
+
+
 
 ---- PROGRAM ----
 
@@ -249,7 +398,7 @@ main =
         { init = init
         , onUrlRequest = ClickedLink
         , onUrlChange = ChangedUrl
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         , update = update
         , view = view
         }
