@@ -16,9 +16,8 @@ import Features.EditBrand
 import Html exposing (Html)
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder, field)
-import Json.Decode.Pipeline exposing (custom, optional, required)
+import Json.Decode.Pipeline exposing (required)
 import Ports
-import RemoteData exposing (WebData)
 import Session exposing (User)
 import UI.Buttons as Buttons
 import UI.Colors as Colors
@@ -26,7 +25,7 @@ import UI.Helpers exposing (borderWidth, textEl)
 import UI.Typography as Typography
 import Url exposing (Url)
 import Url.Builder as Builder exposing (relative)
-import Url.Parser as Parser exposing ((</>), Parser, s)
+import Url.Parser as Parser exposing (Parser, s)
 
 
 
@@ -52,7 +51,7 @@ type Route
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
+init _ url key =
     let
         user =
             Nothing
@@ -79,9 +78,6 @@ urlToPage url =
             EditBrandPage {}
 
         Nothing ->
-            Dashboard
-
-        _ ->
             Dashboard
 
 
@@ -155,10 +151,6 @@ update msg model =
             ( model, Ports.openAuthModal () )
 
         UserLogin user ->
-            let
-                _ =
-                    Debug.log "user" user
-            in
             ( { model | user = user }, Cmd.none )
 
         UserLogout ->
