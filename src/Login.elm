@@ -74,7 +74,7 @@ view model =
             , label = "Submit"
             }
         , Element.link
-            []
+            [ Element.centerX, Font.size 16 ]
             { url = "/register"
             , label = textEl [] "Register"
             }
