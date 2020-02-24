@@ -1,7 +1,7 @@
 module Features.EditBrand exposing (Model, Msg, init, update, view)
 
 import Element exposing (Element)
-import UI.Helpers exposing (textEl)
+import UI.Typography as Typography
 
 
 init : ( Model, Cmd msg )
@@ -24,4 +24,4 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
-    textEl [] "Edit the Brand Screen"
+    Typography.default [] "Edit the Brand Screen"

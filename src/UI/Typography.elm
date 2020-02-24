@@ -1,4 +1,4 @@
-module UI.Typography exposing (..)
+module UI.Typography exposing (default, h1)
 
 import Element exposing (..)
 
@@ -11,3 +11,8 @@ h1 attributes string =
             attributes
         )
         (text string)
+
+
+default : List (Attribute msg) -> String -> Element msg
+default styles string =
+    el styles (text string)

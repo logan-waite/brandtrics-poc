@@ -12,16 +12,16 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
+import Features.Dashboard
 import Features.EditBrand
 import Html exposing (Html)
-import Html.Attributes
 import Json.Decode as Decode exposing (Decoder, field)
 import Json.Decode.Pipeline exposing (required)
 import Ports
 import Session exposing (User)
 import UI.Buttons as Buttons
 import UI.Colors as Colors
-import UI.Helpers exposing (borderWidth, textEl)
+import UI.Helpers exposing (borderWidth)
 import UI.Typography as Typography
 import Url exposing (Url)
 import Url.Builder as Builder exposing (relative)
@@ -41,7 +41,7 @@ type alias Model =
 
 
 type Page
-    = Dashboard
+    = DashboardPage Features.Dashboard.Model
     | EditBrandPage Features.EditBrand.Model
 
 
@@ -72,13 +72,13 @@ urlToPage : Url -> Page
 urlToPage url =
     case Parser.parse parser url of
         Just Top ->
-            Dashboard
+            DashboardPage {}
 
         Just EditBrand ->
             EditBrandPage {}
 
         Nothing ->
-            Dashboard
+            DashboardPage {}
 
 
 checkLogin : Nav.Key -> Maybe User -> Url -> Cmd Msg
@@ -112,6 +112,7 @@ type Msg
     | ChangedUrl Url
     | ShowMenu
     | GotEditBrandMsg Features.EditBrand.Msg
+    | GotDashboardMsg Features.Dashboard.Msg
     | OnError String
     | OpenAuthModal
     | UserLogin (Maybe User)
@@ -147,6 +148,14 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        GotDashboardMsg dashboardMsg ->
+            case model.page of
+                DashboardPage dashboardModel ->
+                    toDashboard model (Features.Dashboard.update dashboardMsg dashboardModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
         OpenAuthModal ->
             ( model, Ports.openAuthModal () )
 
@@ -164,6 +173,13 @@ toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) 
 toEditBrand model ( editBrand, cmd ) =
     ( { model | page = EditBrandPage editBrand }
     , Cmd.map GotEditBrandMsg cmd
+    )
+
+
+toDashboard : Model -> ( Features.Dashboard.Model, Cmd Features.Dashboard.Msg ) -> ( Model, Cmd Msg )
+toDashboard model ( dashboard, cmd ) =
+    ( { model | page = DashboardPage dashboard }
+    , Cmd.map GotDashboardMsg cmd
     )
 
 
@@ -212,7 +228,7 @@ titleScreen : Element Msg
 titleScreen =
     Element.column
         [ Element.centerX, height fill ]
-        [ textEl
+        [ Typography.default
             [ Font.bold
             , Font.size 50
             , padding 25
@@ -244,8 +260,8 @@ header =
         , Border.widthEach { borderWidth | bottom = 2 }
         , Background.color Colors.white
         ]
-        [ link [ alignLeft ] { url = "/", label = textEl [ Font.bold ] "Brandtrics" }
-        , textEl
+        [ link [ alignLeft ] { url = "/", label = Typography.default [ Font.bold ] "Brandtrics" }
+        , Typography.default
             [ alignRight
             , Events.onClick ShowMenu
             ]
@@ -293,39 +309,9 @@ featureScreen model =
             Features.EditBrand.view editBrandModel
                 |> Element.map GotEditBrandMsg
 
-        Dashboard ->
-            dashboard
-
-
-featureButton : String -> String -> Element Msg
-featureButton label url =
-    link
-        [ height (px 150)
-        , width (px 150)
-        , Border.width 1
-        , Background.color Colors.background
-        , Element.htmlAttribute (Html.Attributes.style "marginLeft" "auto")
-        , Element.htmlAttribute (Html.Attributes.style "marginRight" "auto")
-        ]
-        { url = url
-        , label =
-            Element.paragraph
-                [ Font.center ]
-                [ textEl [] label ]
-        }
-
-
-dashboard : Element Msg
-dashboard =
-    Element.wrappedRow
-        [ Element.spacing 50
-        , Element.centerX
-        , Element.centerY
-        , width (fill |> Element.maximum 500)
-        ]
-        [ featureButton "Edit Brand" "/edit"
-        , featureButton "Export Style Guide" "/export"
-        ]
+        DashboardPage dashboardModel ->
+            Features.Dashboard.view dashboardModel
+                |> Element.map GotDashboardMsg
 
 
 subscriptions : Model -> Sub Msg
@@ -354,11 +340,6 @@ authType result =
             Debug.log "authType error" error
                 |> Decode.errorToString
                 |> OnError
-
-
-
--- _ ->
---     Cmd.none
 
 
 type alias AuthAction =
