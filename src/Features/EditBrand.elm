@@ -94,7 +94,7 @@ colorsArea =
             "Main"
           <|
             row
-                []
+                [ spacing 10 ]
                 [ colorItem "dapper"
                 , colorItem "bada55"
                 , colorItem "f71da4"
