@@ -1,8 +1,5 @@
 module Main exposing (..)
 
--- import Element.Input as Input
--- import Element.Lazy exposing (lazy)
-
 import Api
 import Browser
 import Browser.Navigation as Nav
@@ -13,7 +10,7 @@ import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
 import Features.Dashboard
-import Features.EditBrand
+import Features.EditBrand exposing (EditRoute(..))
 import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder, field)
 import Json.Decode.Pipeline exposing (required)
@@ -25,7 +22,7 @@ import UI.Helpers exposing (borderWidth)
 import UI.Typography as Typography
 import Url exposing (Url)
 import Url.Builder as Builder exposing (relative)
-import Url.Parser as Parser exposing (Parser, s)
+import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 
@@ -48,6 +45,9 @@ type Page
 type Route
     = Top
     | EditBrand
+    | EditLogos
+    | EditColors
+    | EditFonts
 
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -75,7 +75,16 @@ urlToPage url =
             DashboardPage {}
 
         Just EditBrand ->
-            EditBrandPage {}
+            EditBrandPage { area = Logos }
+
+        Just EditLogos ->
+            EditBrandPage { area = Logos }
+
+        Just EditColors ->
+            EditBrandPage { area = Colors }
+
+        Just EditFonts ->
+            EditBrandPage { area = Fonts }
 
         Nothing ->
             DashboardPage {}
@@ -100,6 +109,9 @@ parser =
     Parser.oneOf
         [ Parser.map Top Parser.top
         , Parser.map EditBrand (s "edit")
+        , Parser.map EditLogos (s "edit" </> s "logos")
+        , Parser.map EditColors (s "edit" </> s "colors")
+        , Parser.map EditFonts (s "edit" </> s "fonts")
         ]
 
 
@@ -140,6 +152,18 @@ update msg model =
         ShowMenu ->
             ( { model | menuOpen = not model.menuOpen }, Cmd.none )
 
+        OpenAuthModal ->
+            ( model, Ports.openAuthModal () )
+
+        UserLogin user ->
+            ( { model | user = user }, Cmd.none )
+
+        UserLogout ->
+            ( { model | user = Nothing }, Cmd.none )
+
+        OnError error ->
+            ( model, Cmd.none )
+
         GotEditBrandMsg editBrandMsg ->
             case model.page of
                 EditBrandPage editBrandModel ->
@@ -155,18 +179,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-
-        OpenAuthModal ->
-            ( model, Ports.openAuthModal () )
-
-        UserLogin user ->
-            ( { model | user = user }, Cmd.none )
-
-        UserLogout ->
-            ( { model | user = Nothing }, Cmd.none )
-
-        OnError error ->
-            ( model, Cmd.none )
 
 
 toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
