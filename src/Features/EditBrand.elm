@@ -4,10 +4,11 @@ import Element exposing (Element, column, fill, height, link, padding, paddingXY
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Hex
-import UI.Buttons as Buttons
+import Library.Hex as Hex
+import UI.Buttons
 import UI.Colors
 import UI.Helpers exposing (borderWidth)
+import UI.Icons as Icons
 import UI.Typography as Typography
 
 
@@ -137,15 +138,21 @@ colorItem color =
         , Border.shadow { offset = ( 0, 0 ), size = 1, blur = 3, color = UI.Colors.grey }
         ]
         [ colorDisplay backgroundColor
-        , Typography.default [ Element.centerX ] ("#" ++ String.toUpper color)
+        , Typography.default [ Element.centerX ]
+            ("#" ++ String.toUpper color)
+        , row
+            [ Element.spaceEvenly, width fill ]
+            [ UI.Buttons.iconButton [] { onPress = Nothing, icon = Icons.pencil UI.Colors.black 20 }
+            , UI.Buttons.iconButton [] { onPress = Nothing, icon = Icons.trashCan UI.Colors.black 20 }
+            ]
         ]
 
 
 colorDisplay : Element.Attribute Msg -> Element Msg
 colorDisplay background =
     Element.el
-        [ width (px 50)
-        , height (px 50)
+        [ width (px 100)
+        , height (px 100)
         , background
         , Border.width 1
         , Border.color UI.Colors.black

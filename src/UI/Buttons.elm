@@ -1,4 +1,4 @@
-module UI.Buttons exposing (default, primary)
+module UI.Buttons exposing (default, iconButton, primary)
 
 import Element exposing (Attribute, Element, padding)
 import Element.Background as Background
@@ -29,3 +29,18 @@ primary attributes buttonInfo =
             attributes
         )
         buttonInfo
+
+
+iconButton : List (Attribute msg) -> { onPress : Maybe msg, icon : Element msg } -> Element msg
+iconButton attributes { onPress, icon } =
+    Input.button
+        (List.append
+            [ Border.rounded 4
+            , Border.width 1
+            , padding 5
+            ]
+            attributes
+        )
+        { onPress = onPress
+        , label = icon
+        }
