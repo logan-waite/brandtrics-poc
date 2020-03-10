@@ -19,6 +19,7 @@ import Session exposing (User)
 import UI.Buttons as Buttons
 import UI.Colors as Colors
 import UI.Helpers exposing (borderWidth)
+import UI.Spacing exposing (medium, small, xsmall)
 import UI.Typography as Typography
 import Url exposing (Url)
 import Url.Builder as Builder exposing (relative)
@@ -34,6 +35,7 @@ type alias Model =
     , key : Nav.Key
     , menuOpen : Bool
     , user : Maybe User
+    , 
     }
 
 
@@ -69,7 +71,7 @@ initialModel url key user =
 
 
 urlToPage : Url -> Page
-urlToPage url =
+urlToPage url model =
     case Parser.parse parser url of
         Just Top ->
             DashboardPage {}
@@ -243,7 +245,7 @@ titleScreen =
         [ Typography.default
             [ Font.bold
             , Font.size 50
-            , padding 25
+            , padding medium
             ]
             "Brandtrics"
         , Element.column
@@ -254,7 +256,7 @@ titleScreen =
             [ Element.image
                 [ width (fill |> Element.maximum 200)
                 , Element.centerX
-                , padding 25
+                , padding medium
                 ]
                 { src = "/logo.svg", description = "Elm Lang Logo" }
             , Typography.h1 [ Element.centerX ] "Your Company Name Here"
@@ -268,7 +270,7 @@ header =
     row
         [ width fill
         , height (px 50)
-        , padding 15
+        , padding small
         , Border.widthEach { borderWidth | bottom = 2 }
         , Background.color Colors.white
         ]
@@ -287,7 +289,7 @@ menu menuOpen =
         column
             [ Region.navigation
             , Background.color Colors.white
-            , padding 15
+            , padding small
             , width (px 250)
             , Element.moveLeft 250
             , Border.widthEach { borderWidth | left = 2 }
@@ -309,7 +311,7 @@ navLink url label =
     link
         [ Font.center
         , width fill
-        , padding 10
+        , padding xsmall
         ]
         { url = url, label = text label }
 

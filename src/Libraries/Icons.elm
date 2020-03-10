@@ -1,4 +1,4 @@
-module Library.Icons exposing (icon)
+module Libraries.Icons exposing (icon)
 
 import Element exposing (Color, Element, html)
 import Svg exposing (Svg)

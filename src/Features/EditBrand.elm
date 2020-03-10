@@ -4,17 +4,18 @@ import Element exposing (Element, column, fill, height, link, padding, paddingXY
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Library.Hex as Hex
+import Libraries.Hex as Hex
 import UI.Buttons
 import UI.Colors
 import UI.Helpers exposing (borderWidth)
 import UI.Icons as Icons
+import UI.Spacing exposing (medium, small, xsmall)
 import UI.Typography as Typography
 
 
 init : EditRoute -> ( Model, Cmd msg )
 init area =
-    ( { area = area }, Cmd.none )
+    ( { area = area, colors = { main = [ "#DAPPER", "#BADA55", "FF63F0" ], secondary = [] } }, Cmd.none )
 
 
 type EditRoute
@@ -24,7 +25,12 @@ type EditRoute
 
 
 type alias Model =
-    { area : EditRoute }
+    { area : EditRoute
+    , colors :
+        { main : List HexColor
+        , secondary : List HexColor
+        }
+    }
 
 
 type Msg
@@ -62,10 +68,10 @@ sideNav : Element Msg
 sideNav =
     column
         [ height fill
-        , padding 15
+        , padding small
         , Border.widthEach { borderWidth | right = 2 }
         , Border.color (Element.rgb255 0 0 0)
-        , spacing 10
+        , spacing xsmall
         ]
         [ editAreaLink "/logos" "Logos"
         , editAreaLink "/colors" "Colors"
@@ -78,7 +84,7 @@ editAreaLink url label =
     link
         [ Font.center
         , width fill
-        , padding 10
+        , padding xsmall
         ]
         { url = "/edit" ++ url, label = text label }
 
@@ -95,7 +101,7 @@ colorsArea =
             "Main"
           <|
             row
-                [ spacing 10 ]
+                [ spacing medium ]
                 [ colorItem "dapper"
                 , colorItem "bada55"
                 , colorItem "f71da4"
@@ -133,8 +139,8 @@ colorItem color =
                 Background.color (toRgb rgbValues)
     in
     column
-        [ spacing 10
-        , padding 10
+        [ spacing xsmall
+        , padding xsmall
         , Border.shadow { offset = ( 0, 0 ), size = 1, blur = 3, color = UI.Colors.grey }
         ]
         [ colorDisplay backgroundColor
@@ -192,7 +198,7 @@ areaContent header content =
     <|
         List.append
             [ Typography.h1
-                [ paddingXY 15 15 ]
+                [ paddingXY small small ]
                 header
             ]
             (content
@@ -203,7 +209,7 @@ areaContent header content =
 subSection : String -> Element Msg -> Element Msg
 subSection subHeader content =
     column
-        [ spacing 15 ]
+        [ spacing small ]
         [ Typography.h2 [ padding 0 ] subHeader
         , content
         ]
@@ -215,7 +221,7 @@ columnItem content =
         [ Border.widthEach { borderWidth | top = 1 }
         , Border.color (Element.rgb255 50 50 50)
         , width fill
-        , paddingXY 15 15
+        , paddingXY small small
         ]
         content
 

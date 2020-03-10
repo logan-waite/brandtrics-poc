@@ -1,17 +1,16 @@
 {-
-This file is a generated file. 
-Any changes made will be lost 
-on regeneration
+   This file is a generated file.
+   Any changes made will be lost
+   on regeneration
 -}
+
 
 module UI.Icons exposing (pencil, timesHexagon, trashCan)
 
-
 import Element exposing (Color, Element)
-import Library.Icons exposing (icon)
+import Libraries.Icons exposing (icon)
 import Svg
 import Svg.Attributes exposing (d)
-
 
 
 pencil : Color -> Int -> Element msg

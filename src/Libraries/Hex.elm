@@ -1,4 +1,4 @@
-module Library.Hex exposing (fromDecimal, toDecimal)
+module Libraries.Hex exposing (fromDecimal, toDecimal)
 
 import Set exposing (Set)
 
