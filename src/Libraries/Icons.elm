@@ -5,8 +5,8 @@ import Svg exposing (Svg)
 import Svg.Attributes exposing (fill, height, viewBox, width)
 
 
-icon : String -> List (Svg msg) -> Color -> Int -> Element msg
-icon viewbox children color size =
+icon : String -> List (Svg msg) -> Int -> Color -> Element msg
+icon viewbox children size color =
     let
         stringSize =
             String.fromInt size

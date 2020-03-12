@@ -34,7 +34,7 @@ function appendBlockToFile (block, file) {
 }
 
 function createCodeBlock (svg) {
-  const typeAnnotation = `${svg.name} : Color -> Int -> Element msg`;
+  const typeAnnotation = `${svg.name} : Int -> Color -> Element msg`;
   const declaration = `${svg.name} =`
   const body = `    icon "${svg.viewbox}" [ Svg.path [ ${svg.attribute} "${svg.data}" ] [] ]`
 
@@ -51,16 +51,16 @@ function parse (file) {
 
 function fileHeader (moduleName, icons, attributes) {
   return `{-
-This file is a generated file. 
-Any changes made will be lost 
-on regeneration
+    This file is a generated file. 
+    Any changes made will be lost 
+    on regeneration
 -}
 
 module UI.${moduleName} exposing (${icons})
 
 
 import Element exposing (Color, Element)
-import Library.Icons exposing (icon)
+import Libraries.Icons exposing (icon)
 import Svg
 import Svg.Attributes exposing (${attributes})
 

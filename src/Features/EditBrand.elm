@@ -1,10 +1,13 @@
-module Features.EditBrand exposing (EditRoute(..), Model, Msg, init, update, view)
+module Features.EditBrand exposing (Model, Msg, init, initialModel, update, view)
 
 import Element exposing (Element, column, fill, height, link, padding, paddingXY, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
 import Libraries.Hex as Hex
+import List.Extra
+import Router exposing (EditBrandRoute(..))
 import UI.Buttons
 import UI.Colors
 import UI.Helpers exposing (borderWidth)
@@ -13,37 +16,115 @@ import UI.Spacing exposing (medium, small, xsmall)
 import UI.Typography as Typography
 
 
-init : EditRoute -> ( Model, Cmd msg )
-init area =
-    ( { area = area, colors = { main = [ "#DAPPER", "#BADA55", "FF63F0" ], secondary = [] } }, Cmd.none )
+init : ( Model, Cmd msg )
+init =
+    ( initialModel, Cmd.none )
 
 
-type EditRoute
-    = Logos
-    | Colors
-    | Fonts
-
-
-type alias Model =
-    { area : EditRoute
-    , colors :
-        { main : List HexColor
-        , secondary : List HexColor
-        }
+initialModel : Model
+initialModel =
+    { colors = brandColors
     }
 
 
+type alias Model =
+    { colors : List BrandColor
+    }
+
+
+type alias HexColor =
+    String
+
+
+type alias BrandColor =
+    { hex : HexColor
+    , category : String
+    , editing : Bool
+    , id : Int
+    }
+
+
+brandColors : List BrandColor
+brandColors =
+    [ { hex = "DAPPER"
+      , category = "main"
+      , editing = False
+      , id = 1
+      }
+    , { hex = "BADA55"
+      , category = "main"
+      , editing = False
+      , id = 2
+      }
+    , { hex = "FA4769"
+      , category = "secondary"
+      , editing = False
+      , id = 3
+      }
+    ]
+
+
+
+-- UPDATE
+
+
 type Msg
-    = NoOp
+    = EditColor BrandColor
+    | UpdateColorHex BrandColor HexColor
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        EditColor color ->
+            let
+                updatedColors =
+                    setColorEditing True color model.colors
+            in
+            ( { model | colors = updatedColors }, Cmd.none )
+
+        UpdateColorHex color value ->
+            let
+                updatedColors =
+                    updateColorHexValue color value model.colors
+            in
+            ( { model | colors = updatedColors }, Cmd.none )
 
 
-view : Model -> Element Msg
-view model =
+updateColorHexValue : BrandColor -> HexColor -> List BrandColor -> List BrandColor
+updateColorHexValue color hexValue colors =
+    let
+        colorIndex =
+            List.Extra.elemIndex color colors
+    in
+    updateColorAtIndex (\c -> { c | hex = hexValue }) colorIndex colors
+
+
+setColorEditing : Bool -> BrandColor -> List BrandColor -> List BrandColor
+setColorEditing value color colors =
+    let
+        colorIndex =
+            List.Extra.elemIndex color colors
+    in
+    updateColorAtIndex (\c -> { c | editing = value }) colorIndex colors
+
+
+updateColorAtIndex : (BrandColor -> BrandColor) -> Maybe Int -> List BrandColor -> List BrandColor
+updateColorAtIndex colorUpdateFn index colors =
+    case index of
+        Just i ->
+            List.Extra.updateAt i colorUpdateFn colors
+
+        Nothing ->
+            colors
+
+
+
+-- VIEW
+
+
+view : EditBrandRoute -> Model -> Element Msg
+view route model =
     row
         [ height fill, width fill ]
         [ sideNav
@@ -52,12 +133,12 @@ view model =
             , width fill
             ]
           <|
-            case model.area of
+            case route of
                 Logos ->
                     logosArea
 
                 Colors ->
-                    colorsArea
+                    colorsArea model.colors
 
                 Fonts ->
                     fontsArea
@@ -93,8 +174,8 @@ editAreaLink url label =
 -- Color Area
 
 
-colorsArea : Element Msg
-colorsArea =
+colorsArea : List BrandColor -> Element Msg
+colorsArea colors =
     areaContent
         "Colors"
         [ subSection
@@ -102,19 +183,16 @@ colorsArea =
           <|
             row
                 [ spacing medium ]
-                [ colorItem "dapper"
-                , colorItem "bada55"
-                , colorItem "f71da4"
-                ]
+                (List.map colorItem colors)
         ]
 
 
-colorItem : String -> Element Msg
+colorItem : BrandColor -> Element Msg
 colorItem color =
     let
         rgbValues : List Int
         rgbValues =
-            splitColors 2 color []
+            splitColors 2 color.hex []
                 |> List.map (Hex.toDecimal >> extract (always -1))
 
         backgroundColor : Element.Attribute msg
@@ -144,14 +222,30 @@ colorItem color =
         , Border.shadow { offset = ( 0, 0 ), size = 1, blur = 3, color = UI.Colors.grey }
         ]
         [ colorDisplay backgroundColor
-        , Typography.default [ Element.centerX ]
-            ("#" ++ String.toUpper color)
+        , if not color.editing then
+            Typography.default [ Element.centerX ] ("#" ++ String.toUpper color.hex)
+
+          else
+            Input.text [] { onChange = UpdateColorHex color, placeholder = Just (Input.placeholder [] (text "Hex Value")), text = color.hex, label = Input.labelHidden "Hex Value" }
         , row
-            [ Element.spaceEvenly, width fill ]
-            [ UI.Buttons.iconButton [] { onPress = Nothing, icon = Icons.pencil UI.Colors.black 20 }
-            , UI.Buttons.iconButton [] { onPress = Nothing, icon = Icons.trashCan UI.Colors.black 20 }
+            [ Element.spaceEvenly, width fill, Element.alignRight ]
+            [ if color.editing then
+                UI.Buttons.iconButton [ Border.color UI.Colors.red ] { onPress = Nothing, icon = Icons.trashCan 20 UI.Colors.red }
+
+              else
+                Element.none
+            , showEditOrSaveButton color.editing (Just (EditColor color)) Nothing
             ]
         ]
+
+
+showEditOrSaveButton : Bool -> Maybe Msg -> Maybe Msg -> Element Msg
+showEditOrSaveButton editing editEvent saveEvent =
+    if editing then
+        UI.Buttons.iconButton [] { onPress = saveEvent, icon = Icons.check 20 UI.Colors.black }
+
+    else
+        UI.Buttons.iconButton [] { onPress = editEvent, icon = Icons.pencil 20 UI.Colors.black }
 
 
 colorDisplay : Element.Attribute Msg -> Element Msg
@@ -235,10 +329,6 @@ columnItem content =
 -}
 
 
-type alias HexColor =
-    String
-
-
 splitColors : Int -> HexColor -> List String -> List String
 splitColors number string newList =
     if String.length string == 0 then
@@ -259,6 +349,10 @@ toRgb intValues =
 
         _ ->
             UI.Colors.white
+
+
+
+-- Helpers
 
 
 extract : (e -> a) -> Result e a -> a

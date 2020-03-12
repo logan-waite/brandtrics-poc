@@ -1,4 +1,4 @@
-module UI.Colors exposing (background, black, grey, primary, white)
+module UI.Colors exposing (background, black, grey, primary, red, white)
 
 import Element exposing (Color, rgb255)
 
@@ -16,6 +16,11 @@ black =
 grey : Color
 grey =
     rgb255 150 150 150
+
+
+red : Color
+red =
+    rgb255 255 0 0
 
 
 background : Color
