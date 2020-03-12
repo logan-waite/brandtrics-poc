@@ -71,6 +71,8 @@ brandColors =
 type Msg
     = EditColor BrandColor
     | UpdateColorHex BrandColor HexColor
+    | SaveColor BrandColor
+    | RemoveColor BrandColor
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -87,6 +89,20 @@ update msg model =
             let
                 updatedColors =
                     updateColorHexValue color value model.colors
+            in
+            ( { model | colors = updatedColors }, Cmd.none )
+
+        SaveColor color ->
+            let
+                updatedColors =
+                    setColorEditing False color model.colors
+            in
+            ( { model | colors = updatedColors }, Cmd.none )
+
+        RemoveColor color ->
+            let
+                updatedColors =
+                    List.Extra.remove color model.colors
             in
             ( { model | colors = updatedColors }, Cmd.none )
 
@@ -230,11 +246,11 @@ colorItem color =
         , row
             [ Element.spaceEvenly, width fill, Element.alignRight ]
             [ if color.editing then
-                UI.Buttons.iconButton [ Border.color UI.Colors.red ] { onPress = Nothing, icon = Icons.trashCan 20 UI.Colors.red }
+                UI.Buttons.iconButton [ Border.color UI.Colors.red ] { onPress = Just (RemoveColor color), icon = Icons.trashCan 20 UI.Colors.red }
 
               else
                 Element.none
-            , showEditOrSaveButton color.editing (Just (EditColor color)) Nothing
+            , showEditOrSaveButton color.editing (Just (EditColor color)) (Just (SaveColor color))
             ]
         ]
 
