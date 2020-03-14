@@ -309,12 +309,10 @@ authType result =
                     UserLogout
 
                 _ ->
-                    Debug.log "action error" "Unknown auth action taken"
-                        |> OnError
+                    OnError "Unknown auth action"
 
         Err error ->
-            Debug.log "authType error" error
-                |> Decode.errorToString
+            Decode.errorToString error
                 |> OnError
 
 

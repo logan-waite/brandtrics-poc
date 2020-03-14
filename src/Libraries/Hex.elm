@@ -1,4 +1,4 @@
-module Libraries.Hex exposing (fromDecimal, toDecimal)
+module Libraries.Hex exposing (toDecimal)
 
 import Set exposing (Set)
 
@@ -23,9 +23,10 @@ isAllowedHexValue hex =
         |> Set.isEmpty
 
 
-fromDecimal : Int -> Hex
-fromDecimal int =
-    Debug.todo "implement fromDecimal"
+
+-- fromDecimal : Int -> Hex
+-- fromDecimal int =
+--     Debug.todo "implement fromDecimal"
 
 
 toDecimal : Hex -> Result String Int
