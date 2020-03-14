@@ -6,8 +6,9 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import Json.Decode exposing (Decoder, string)
+import Json.Decode as Decode exposing (Decoder, string)
 import Json.Decode.Pipeline exposing (hardcoded, required)
+import Json.Encode as Encode
 import Libraries.Hex as Hex
 import List.Extra
 import RemoteData exposing (RemoteData(..), WebData)
@@ -23,15 +24,11 @@ import UI.Typography as Typography
 
 init : Model -> ( Model, Cmd Msg )
 init model =
-    let
-        cmd =
-            if List.isEmpty model.colors then
-                Api.getColors colorListDecoder GetColors
+    if List.isEmpty model.colors then
+        update GetColors model
 
-            else
-                Cmd.none
-    in
-    ( model, cmd )
+    else
+        ( model, Cmd.none )
 
 
 initialModel : Model
@@ -62,7 +59,8 @@ type alias BrandColor =
 
 
 type Msg
-    = GetColors (WebData (List BrandColor))
+    = ColorRequest (WebData (List BrandColor))
+    | GetColors
     | EditColor BrandColor
     | UpdateColorHex BrandColor HexColor
     | SaveColor BrandColor
@@ -88,19 +86,23 @@ update msg model =
 
         SaveColor color ->
             let
-                updatedColors =
-                    setColorEditing False color model.colors
+                encode : BrandColor -> Encode.Value
+                encode c =
+                    Encode.object
+                        [ ( "hex", Encode.string c.hex )
+                        , ( "category", Encode.string c.category )
+                        , ( "id", Encode.string c.id )
+                        ]
             in
-            ( { model | colors = updatedColors }, Cmd.none )
+            ( model, Api.updateColor ColorRequest colorListDecoder (encode color) )
 
         RemoveColor color ->
-            let
-                updatedColors =
-                    List.Extra.remove color model.colors
-            in
-            ( { model | colors = updatedColors }, Cmd.none )
+            ( model, Api.deleteColor ColorRequest colorListDecoder color.id )
 
-        GetColors colors ->
+        GetColors ->
+            ( model, Api.getColors ColorRequest colorListDecoder )
+
+        ColorRequest colors ->
             let
                 newModel =
                     case colors of
@@ -157,12 +159,12 @@ updateColorAtIndex colorUpdateFn index colors =
 
 colorListDecoder : Decoder (List BrandColor)
 colorListDecoder =
-    Json.Decode.list colorDecoder
+    Decode.list colorDecoder
 
 
 colorDecoder : Decoder BrandColor
 colorDecoder =
-    Json.Decode.succeed BrandColor
+    Decode.succeed BrandColor
         |> required "hex" string
         |> required "category" string
         |> hardcoded False

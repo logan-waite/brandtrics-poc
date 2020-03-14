@@ -23,14 +23,10 @@ request :
     }
     -> Cmd msg
 request config =
-    let
-        _ =
-            Debug.log "request config" config.body
-    in
     Http.request
         { method = config.method
         , headers = config.headers
-        , url = unwrap config.url |> Debug.log "url"
+        , url = unwrap config.url
         , body = config.body
         , expect = config.expect
         , timeout = config.timeout
@@ -54,14 +50,15 @@ unwrap (Endpoint str) =
     str
 
 
-url : List String -> List QueryParameter -> Endpoint
-url paths queryParams =
-    -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
-    -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin "https://conduit.productionready.io"
-        ("api" :: paths)
-        queryParams
-        |> Endpoint
+
+-- url : List String -> List QueryParameter -> Endpoint
+-- url paths queryParams =
+--     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
+--     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
+--     Url.Builder.crossOrigin "https://conduit.productionready.io"
+--         ("api" :: paths)
+--         queryParams
+--         |> Endpoint
 
 
 function : String -> Endpoint

@@ -1,40 +1,39 @@
-module Api exposing (getColors)
+module Api exposing (deleteColor, getColors, updateColor)
 
 import Api.Endpoint as Endpoint exposing (Endpoint)
+import Api.Request exposing (..)
 import Http
-import Json.Decode as Decode exposing (..)
-import Json.Encode as Encode exposing (..)
+import Json.Decode as Decode exposing (Decoder, field)
+import Json.Encode as Encode exposing (encode)
 import RemoteData exposing (RemoteData, WebData)
 
 
-get :
-    { url : Endpoint
-    , expect : Http.Expect msg
-    }
-    -> Cmd msg
-get { url, expect } =
-    Endpoint.request
-        { method = "GET"
-        , headers = []
-        , url = url
-        , body = Http.emptyBody
-        , expect = expect
-        , timeout = Nothing
-        , tracker = Nothing
+dataToCmd : (WebData a -> msg) -> Result Http.Error a -> msg
+dataToCmd cmd =
+    RemoteData.fromResult >> cmd
+
+
+getColors : (WebData a -> msg) -> Decoder a -> Cmd msg
+getColors cmd decoder =
+    get
+        { url = Endpoint.firestore
+        , expect = Http.expectJson (dataToCmd cmd) (field "colors" decoder)
         }
 
 
-type alias Test =
-    { test : String }
-
-
-type ResponseAction e a
-    = RemoteData e a
-
-
-getColors : Decoder a -> (WebData a -> msg) -> Cmd msg
-getColors decoder cmd =
-    get
+deleteColor : (WebData a -> msg) -> Decoder a -> String -> Cmd msg
+deleteColor cmd decoder id =
+    delete
         { url = Endpoint.firestore
-        , expect = Http.expectJson (RemoteData.fromResult >> cmd) (field "colors" decoder) |> Debug.log "on return"
+        , expect = Http.expectJson (dataToCmd cmd) (field "colors" decoder)
+        , body = Http.stringBody "text/plain" id
+        }
+
+
+updateColor : (WebData a -> msg) -> Decoder a -> Encode.Value -> Cmd msg
+updateColor cmd decoder color =
+    put
+        { url = Endpoint.firestore
+        , expect = Http.expectJson (dataToCmd cmd) (field "colors" decoder)
+        , body = Http.jsonBody color
         }

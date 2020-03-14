@@ -45,6 +45,7 @@ function parse (file) {
   const fileContents = fs.readFileSync(`${directoryPath}/${file}`, { encoding: 'utf-8' })
   const viewbox = fileContents.match(/viewbox="(\d+ \d+ \d+ \d+)"/i)[1];
   const [_, attribute, data] = fileContents.match(/path\s([a-zA-Z]+)="(.+)"/i)
+  // TODO: perhaps convert dashed names to camel case
   const name = file.slice(0, -4)
   return { viewbox, attribute, data, name }
 }
