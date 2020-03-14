@@ -1,7 +1,7 @@
-module Dashboard exposing (..)
+module Features.ExportStyleGuide exposing (Model, Msg, update, view)
 
 import Element exposing (Element)
-import UIHelpers exposing (textEl)
+import UI.Typography as Typography
 
 
 type alias Model =
@@ -19,4 +19,4 @@ update msg model =
 
 view : Model -> Element Msg
 view model =
-    textEl [] "Dashboard Screen"
+    Typography.default [] "Export Stylesheet Screen"
