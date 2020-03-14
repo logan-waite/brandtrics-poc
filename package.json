@@ -7,11 +7,14 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "cd ./functions/firestore && yarn install",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generateIcons": "node ./generateIcons.js"
   },
   "author": "Logan Waite",
   "license": "ISC",
   "devDependencies": {
     "create-elm-app": "^4.1.2"
-  }
+  },
+  "dependencies": {}
 }
