@@ -12,6 +12,7 @@ import Libraries.Hex as Hex
 import List.Extra
 import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (EditBrandRoute(..))
+import String exposing (cons)
 import UI.Buttons
 import UI.Colors
 import UI.Helpers exposing (borderWidth)
@@ -187,7 +188,7 @@ view route model =
                     logosArea
 
                 Colors ->
-                    colorsArea model.colors
+                    colorsArea (groupColors model.colors)
 
                 Fonts ->
                     fontsArea
@@ -223,47 +224,52 @@ editAreaLink url label =
 -- Color Area
 
 
-colorsArea : List BrandColor -> Element Msg
+colorsArea : List ( String, List BrandColor ) -> Element Msg
 colorsArea colors =
     areaContent
         "Colors"
-        [ subSection
-            "Main"
-          <|
-            row
-                [ spacing medium ]
-                (List.map colorItem colors)
-        ]
+    <|
+        List.map
+            (\category ->
+                subSection
+                    (stringToTitleCase (Tuple.first category))
+                <|
+                    row
+                        [ spacing medium ]
+                        (List.map colorItem (Tuple.second category))
+            )
+            colors
 
 
 colorItem : BrandColor -> Element Msg
 colorItem color =
     let
-        rgbValues : List Int
+        rgbValues : Maybe (List Int)
         rgbValues =
-            splitColors 2 color.hex []
-                |> List.map (Hex.toDecimal >> extract (always -1))
+            correctColorLength color.hex
+                |> Maybe.andThen convertHex
 
         backgroundColor : Element.Attribute msg
         backgroundColor =
-            if List.member -1 rgbValues then
-                Background.gradient
-                    { angle = 2.36
-                    , steps =
-                        [ UI.Colors.white
-                        , UI.Colors.white
-                        , UI.Colors.white
-                        , UI.Colors.white
-                        , Element.rgb255 255 0 0
-                        , UI.Colors.white
-                        , UI.Colors.white
-                        , UI.Colors.white
-                        , UI.Colors.white
-                        ]
-                    }
+            case rgbValues of
+                Nothing ->
+                    Background.gradient
+                        { angle = 2.36
+                        , steps =
+                            [ UI.Colors.white
+                            , UI.Colors.white
+                            , UI.Colors.white
+                            , UI.Colors.white
+                            , Element.rgb255 255 0 0
+                            , UI.Colors.white
+                            , UI.Colors.white
+                            , UI.Colors.white
+                            , UI.Colors.white
+                            ]
+                        }
 
-            else
-                Background.color (toRgb rgbValues)
+                Just values ->
+                    Background.color (toRgb values)
     in
     column
         [ spacing xsmall
@@ -373,16 +379,36 @@ columnItem content =
 -- Color Conversion Tools
 
 
-splitColors : Int -> HexColor -> List String -> List String
-splitColors number string newList =
+convertHex : List String -> Maybe (List Int)
+convertHex hex =
+    List.map (Hex.toDecimal >> Result.toMaybe) hex
+        |> combine
+
+
+correctColorLength : HexColor -> Maybe (List String)
+correctColorLength hex =
+    if String.length hex == 6 then
+        Just (splitColors 2 [] hex)
+
+    else if String.length hex == 3 then
+        String.foldr (\letter acc -> cons letter acc |> cons letter) "" hex
+            |> splitColors 2 []
+            |> Just
+
+    else
+        Nothing
+
+
+splitColors : Int -> List String -> HexColor -> List String
+splitColors number segments string =
     if String.length string == 0 then
-        newList
+        segments
 
     else
         splitColors
             number
+            (String.right number string :: segments)
             (String.dropRight number string)
-            (String.right number string :: newList)
 
 
 toRgb : List Int -> Element.Color
@@ -397,6 +423,42 @@ toRgb intValues =
 
 
 -- Helpers
+
+
+firstToUpper : String -> String
+firstToUpper string =
+    let
+        firstLetter =
+            String.left 1 string
+                |> String.toUpper
+    in
+    String.dropLeft 1 string
+        |> String.append firstLetter
+
+
+stringToTitleCase : String -> String
+stringToTitleCase string =
+    String.words string
+        |> List.map firstToUpper
+        |> String.join " "
+
+
+groupColors : List BrandColor -> List ( String, List BrandColor )
+groupColors colors =
+    let
+        groupByCategory : BrandColor -> BrandColor -> Bool
+        groupByCategory a b =
+            a.category == b.category
+
+        grouped =
+            List.Extra.groupWhile groupByCategory colors
+    in
+    List.map (\t -> ( .category (Tuple.first t), Tuple.first t :: Tuple.second t )) grouped
+
+
+combine : List (Maybe a) -> Maybe (List a)
+combine =
+    List.foldr (Maybe.map2 (::)) (Just [])
 
 
 extract : (e -> a) -> Result e a -> a

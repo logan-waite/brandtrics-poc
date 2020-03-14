@@ -78,11 +78,11 @@ updateUrl url model =
     case updatedModel.route of
         Just (EditBrand _) ->
             Features.EditBrand.init model.editBrandModel
-                |> toEditBrand model
+                |> toEditBrand updatedModel
 
         Just Top ->
             Features.Dashboard.init model.dashboardModel
-                |> toDashboard model
+                |> toDashboard updatedModel
 
         Nothing ->
             ( model, Cmd.none )

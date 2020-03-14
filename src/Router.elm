@@ -27,6 +27,5 @@ parser =
         , Parser.map (EditBrand Logos) (s "edit")
         , Parser.map (EditBrand Logos) (s "edit" </> s "logos")
         , Parser.map (EditBrand Colors) (s "edit" </> s "colors")
-
-        -- , Parser.map EditFonts (s "edit" </> s "fonts")
+        , Parser.map (EditBrand Fonts) (s "edit" </> s "fonts")
         ]
