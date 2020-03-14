@@ -45,12 +45,13 @@ init _ url key =
         user =
             Nothing
     in
-    ( initialModel url key user, Cmd.none )
+    initialModel key user
+        |> updateUrl url
 
 
-initialModel : Url -> Nav.Key -> Maybe User -> Model
-initialModel url key user =
-    { route = urlToRoute url
+initialModel : Nav.Key -> Maybe User -> Model
+initialModel key user =
+    { route = Just Top
     , key = key
     , menuOpen = False
     , user = user
@@ -68,6 +69,24 @@ checkLogin key user =
         Cmd.none
 
 
+updateUrl url model =
+    let
+        updatedModel =
+            { model | route = urlToRoute url }
+    in
+    case updatedModel.route of
+        Just (EditBrand _) ->
+            Features.EditBrand.init model.editBrandModel
+                |> toEditBrand model
+
+        Just Top ->
+            Features.Dashboard.init model.dashboardModel
+                |> toDashboard model
+
+        Nothing ->
+            ( model, Cmd.none )
+
+
 
 ---- UPDATE ----
 
@@ -82,10 +101,6 @@ type Msg
     | OpenAuthModal
     | UserLogin (Maybe User)
     | UserLogout
-
-
-
--- | CheckedAuth (WebData String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,22 +133,26 @@ update msg model =
             ( model, Cmd.none )
 
         EditBrandMsg editBrandMsg ->
-            let
-                updateGlobal : ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
-                updateGlobal ( subModel, subMsg ) =
-                    ( { model | editBrandModel = subModel }, Cmd.map EditBrandMsg subMsg )
-            in
             Features.EditBrand.update editBrandMsg model.editBrandModel
-                |> updateGlobal
+                |> toEditBrand model
 
         DashboardMsg dashboardMsg ->
-            let
-                updateGlobal : ( Features.Dashboard.Model, Cmd Features.Dashboard.Msg ) -> ( Model, Cmd Msg )
-                updateGlobal ( subModel, subMsg ) =
-                    ( { model | dashboardModel = subModel }, Cmd.map DashboardMsg subMsg )
-            in
             Features.Dashboard.update dashboardMsg model.dashboardModel
-                |> updateGlobal
+                |> toDashboard model
+
+
+toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
+toEditBrand model ( editBrandModel, editBrandMsg ) =
+    ( { model | editBrandModel = editBrandModel }
+    , Cmd.map EditBrandMsg editBrandMsg
+    )
+
+
+toDashboard : Model -> ( Features.Dashboard.Model, Cmd Features.Dashboard.Msg ) -> ( Model, Cmd Msg )
+toDashboard model ( dashboardModel, dashboardMsg ) =
+    ( { model | dashboardModel = dashboardModel }
+    , Cmd.map DashboardMsg dashboardMsg
+    )
 
 
 

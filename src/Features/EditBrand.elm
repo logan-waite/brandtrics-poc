@@ -1,5 +1,6 @@
 module Features.EditBrand exposing (Model, Msg, init, initialModel, update, view)
 
+import Api
 import Element exposing (Element, column, fill, height, link, padding, paddingXY, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -7,6 +8,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Libraries.Hex as Hex
 import List.Extra
+import RemoteData exposing (WebData)
 import Router exposing (EditBrandRoute(..))
 import UI.Buttons
 import UI.Colors
@@ -16,14 +18,22 @@ import UI.Spacing exposing (medium, small, xsmall)
 import UI.Typography as Typography
 
 
-init : ( Model, Cmd msg )
-init =
-    ( initialModel, Cmd.none )
+init : Model -> ( Model, Cmd Msg )
+init model =
+    let
+        cmd =
+            if List.isEmpty model.colors then
+                Api.getColors GetColors
+
+            else
+                Cmd.none
+    in
+    ( model, cmd )
 
 
 initialModel : Model
 initialModel =
-    { colors = brandColors
+    { colors = []
     }
 
 
@@ -69,7 +79,8 @@ brandColors =
 
 
 type Msg
-    = EditColor BrandColor
+    = GetColors (WebData String)
+    | EditColor BrandColor
     | UpdateColorHex BrandColor HexColor
     | SaveColor BrandColor
     | RemoveColor BrandColor
@@ -105,6 +116,13 @@ update msg model =
                     List.Extra.remove color model.colors
             in
             ( { model | colors = updatedColors }, Cmd.none )
+
+        GetColors colors ->
+            let
+                _ =
+                    Debug.log "color string" colors
+            in
+            ( model, Cmd.none )
 
 
 updateColorHexValue : BrandColor -> HexColor -> List BrandColor -> List BrandColor

@@ -1,4 +1,4 @@
-module Features.Dashboard exposing (Model, Msg, initialModel, update, view)
+module Features.Dashboard exposing (Model, Msg, init, initialModel, update, view)
 
 import Element exposing (Element, fill, height, link, px, width)
 import Element.Background as Background
@@ -11,6 +11,11 @@ import UI.Typography as Typography
 
 type alias Model =
     {}
+
+
+init : Model -> ( Model, Cmd Msg )
+init model =
+    ( model, Cmd.none )
 
 
 initialModel : Model
