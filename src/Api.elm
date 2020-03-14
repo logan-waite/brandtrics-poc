@@ -1,9 +1,9 @@
-module Api exposing (authorizeUser)
+module Api exposing (getColors)
 
 import Api.Endpoint as Endpoint exposing (Endpoint)
 import Http
-import Json.Decode exposing (..)
-import Json.Encode exposing (..)
+import Json.Decode as Decode exposing (..)
+import Json.Encode as Encode exposing (..)
 import RemoteData exposing (RemoteData, WebData)
 
 
@@ -32,9 +32,9 @@ type ResponseAction e a
     = RemoteData e a
 
 
-authorizeUser : (WebData String -> msg) -> Cmd msg
-authorizeUser cmd =
+getColors : Decoder a -> (WebData a -> msg) -> Cmd msg
+getColors decoder cmd =
     get
-        { url = Endpoint.authorizeUser
-        , expect = Http.expectJson (RemoteData.fromResult >> cmd) (field "test" Json.Decode.string) |> Debug.log "on return"
+        { url = Endpoint.firestore
+        , expect = Http.expectJson (RemoteData.fromResult >> cmd) (field "colors" decoder) |> Debug.log "on return"
         }

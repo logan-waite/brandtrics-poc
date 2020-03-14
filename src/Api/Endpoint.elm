@@ -1,4 +1,4 @@
-module Api.Endpoint exposing (Endpoint, authorizeUser, request)
+module Api.Endpoint exposing (Endpoint, firestore, request)
 
 import Http
 import Json.Encode
@@ -42,7 +42,7 @@ request config =
 -- TYPES
 
 
-{-| Get a URL to the Conduit API.
+{-| Get a URL to the API.
 This is not publicly exposed, because we want to make sure the only way to get one of these URLs is from this module.
 -}
 type Endpoint
@@ -76,6 +76,6 @@ function func =
 -- FUNCTIONS
 
 
-authorizeUser : Endpoint
-authorizeUser =
-    function "user-auth"
+firestore : Endpoint
+firestore =
+    function "firestore"

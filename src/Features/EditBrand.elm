@@ -6,9 +6,11 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import Json.Decode exposing (Decoder, string)
+import Json.Decode.Pipeline exposing (hardcoded, required)
 import Libraries.Hex as Hex
 import List.Extra
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData(..), WebData)
 import Router exposing (EditBrandRoute(..))
 import UI.Buttons
 import UI.Colors
@@ -23,7 +25,7 @@ init model =
     let
         cmd =
             if List.isEmpty model.colors then
-                Api.getColors GetColors
+                Api.getColors colorListDecoder GetColors
 
             else
                 Cmd.none
@@ -50,28 +52,8 @@ type alias BrandColor =
     { hex : HexColor
     , category : String
     , editing : Bool
-    , id : Int
+    , id : String
     }
-
-
-brandColors : List BrandColor
-brandColors =
-    [ { hex = "DAPPER"
-      , category = "main"
-      , editing = False
-      , id = 1
-      }
-    , { hex = "BADA55"
-      , category = "main"
-      , editing = False
-      , id = 2
-      }
-    , { hex = "FA4769"
-      , category = "secondary"
-      , editing = False
-      , id = 3
-      }
-    ]
 
 
 
@@ -79,7 +61,7 @@ brandColors =
 
 
 type Msg
-    = GetColors (WebData String)
+    = GetColors (WebData (List BrandColor))
     | EditColor BrandColor
     | UpdateColorHex BrandColor HexColor
     | SaveColor BrandColor
@@ -119,10 +101,25 @@ update msg model =
 
         GetColors colors ->
             let
-                _ =
-                    Debug.log "color string" colors
+                newModel =
+                    case colors of
+                        NotAsked ->
+                            model
+
+                        Loading ->
+                            model
+
+                        Failure _ ->
+                            model
+
+                        Success colorList ->
+                            { model | colors = colorList }
             in
-            ( model, Cmd.none )
+            ( newModel, Cmd.none )
+
+
+
+-- Color Updates
 
 
 updateColorHexValue : BrandColor -> HexColor -> List BrandColor -> List BrandColor
@@ -151,6 +148,24 @@ updateColorAtIndex colorUpdateFn index colors =
 
         Nothing ->
             colors
+
+
+
+-- Color Decoders
+
+
+colorListDecoder : Decoder (List BrandColor)
+colorListDecoder =
+    Json.Decode.list colorDecoder
+
+
+colorDecoder : Decoder BrandColor
+colorDecoder =
+    Json.Decode.succeed BrandColor
+        |> required "hex" string
+        |> required "category" string
+        |> hardcoded False
+        |> required "id" string
 
 
 
@@ -356,11 +371,6 @@ columnItem content =
 
 
 -- Color Conversion Tools
-{-
-   Step 1: Split value into 3 colors (1/2 digits each)
-   Step 2: Figure out each value from 0 to 255
-   Step 3: Plug the values into an rgb255 function
--}
 
 
 splitColors : Int -> HexColor -> List String -> List String

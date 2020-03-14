@@ -69,6 +69,7 @@ checkLogin key user =
         Cmd.none
 
 
+updateUrl : Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
     let
         updatedModel =
