@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "prebuild": "cd ./functions/firestore && yarn install",
+    "preinstall": "cd ./functions/firestore && yarn install",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateIcons": "node ./generateIcons.js"
   },
