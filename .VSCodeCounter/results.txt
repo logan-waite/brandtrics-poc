@@ -1,0 +1,68 @@
+Date : 2020-02-21 07:27:29
+Directory : /Users/loganw/Code/brandtrics-poc
+Total : 27 files,  1701 codes, 78 comments, 539 blanks, all 2318 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| Markdown   |          1 |        641 |          0 |        297 |        938 |
+| Elm        |         12 |        490 |         21 |        194 |        705 |
+| JSON       |          7 |        362 |          0 |          5 |        367 |
+| JavaScript |          4 |        144 |         52 |         29 |        225 |
+| XML        |          1 |         32 |          1 |          7 |         40 |
+| HTML       |          1 |         19 |          4 |          3 |         26 |
+| YAML       |          1 |         13 |          0 |          4 |         17 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                      | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                         |         27 |      1,701 |         78 |        539 |      2,318 |
+| .github                                                                   |          1 |         13 |          0 |          4 |         17 |
+| .github/workflows                                                         |          1 |         13 |          0 |          4 |         17 |
+| functions                                                                 |          6 |        332 |         15 |         14 |        361 |
+| functions/create-user                                                     |          3 |         59 |          4 |          8 |         71 |
+| functions/user-auth                                                       |          3 |        273 |         11 |          6 |        290 |
+| public                                                                    |          3 |         66 |          5 |         11 |         82 |
+| src                                                                       |         12 |        488 |         26 |        194 |        708 |
+| src/Api                                                                   |          1 |         48 |         11 |         23 |         82 |
+| src/Features                                                              |          2 |         29 |          0 |         22 |         51 |
+| src/UI                                                                    |          4 |         55 |          0 |         24 |         79 |
+| tests                                                                     |          1 |         16 |          1 |          6 |         23 |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                  | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| /Users/loganw/Code/brandtrics-poc/.github/workflows/main.yml              | YAML       |         13 |          0 |          4 |         17 |
+| /Users/loganw/Code/brandtrics-poc/README.md                               | Markdown   |        641 |          0 |        297 |        938 |
+| /Users/loganw/Code/brandtrics-poc/elm.json                                | JSON       |         36 |          0 |          0 |         36 |
+| /Users/loganw/Code/brandtrics-poc/functions/create-user/create-user.js    | JavaScript |         25 |          4 |          6 |         35 |
+| /Users/loganw/Code/brandtrics-poc/functions/create-user/package-lock.json | JSON       |         13 |          0 |          1 |         14 |
+| /Users/loganw/Code/brandtrics-poc/functions/create-user/package.json      | JSON       |         21 |          0 |          1 |         22 |
+| /Users/loganw/Code/brandtrics-poc/functions/user-auth/package-lock.json   | JSON       |        238 |          0 |          1 |        239 |
+| /Users/loganw/Code/brandtrics-poc/functions/user-auth/package.json        | JSON       |         22 |          0 |          1 |         23 |
+| /Users/loganw/Code/brandtrics-poc/functions/user-auth/user-auth.js        | JavaScript |         13 |         11 |          4 |         28 |
+| /Users/loganw/Code/brandtrics-poc/package.json                            | JSON       |         17 |          0 |          0 |         17 |
+| /Users/loganw/Code/brandtrics-poc/public/index.html                       | HTML       |         19 |          4 |          3 |         26 |
+| /Users/loganw/Code/brandtrics-poc/public/logo.svg                         | XML        |         32 |          1 |          7 |         40 |
+| /Users/loganw/Code/brandtrics-poc/public/manifest.json                    | JSON       |         15 |          0 |          1 |         16 |
+| /Users/loganw/Code/brandtrics-poc/serviceWorker.js                        | JavaScript |         92 |         31 |         13 |        136 |
+| /Users/loganw/Code/brandtrics-poc/src/Api.elm                             | Elm        |         31 |          0 |         10 |         41 |
+| /Users/loganw/Code/brandtrics-poc/src/Api/Endpoint.elm                    | Elm        |         48 |         11 |         23 |         82 |
+| /Users/loganw/Code/brandtrics-poc/src/Features/EditBrand.elm              | Elm        |         16 |          0 |         12 |         28 |
+| /Users/loganw/Code/brandtrics-poc/src/Features/ExportStyleGuide.elm       | Elm        |         13 |          0 |         10 |         23 |
+| /Users/loganw/Code/brandtrics-poc/src/Main.elm                            | Elm        |        295 |          9 |         93 |        397 |
+| /Users/loganw/Code/brandtrics-poc/src/Ports.elm                           | Elm        |          4 |          0 |          6 |         10 |
+| /Users/loganw/Code/brandtrics-poc/src/Session.elm                         | Elm        |         12 |          0 |         10 |         22 |
+| /Users/loganw/Code/brandtrics-poc/src/UI/Buttons.elm                      | Elm        |         26 |          0 |          6 |         32 |
+| /Users/loganw/Code/brandtrics-poc/src/UI/Colors.elm                       | Elm        |          8 |          0 |          6 |         14 |
+| /Users/loganw/Code/brandtrics-poc/src/UI/Helpers.elm                      | Elm        |         11 |          0 |          8 |         19 |
+| /Users/loganw/Code/brandtrics-poc/src/UI/Typography.elm                   | Elm        |         10 |          0 |          4 |         14 |
+| /Users/loganw/Code/brandtrics-poc/src/index.js                            | JavaScript |         14 |          6 |          6 |         26 |
+| /Users/loganw/Code/brandtrics-poc/tests/Tests.elm                         | Elm        |         16 |          1 |          6 |         23 |
+| Total                                                                     |            |      1,701 |         78 |        539 |      2,318 |
++---------------------------------------------------------------------------+------------+------------+------------+------------+------------+

@@ -1,9 +1,5 @@
 module Main exposing (..)
 
--- import Element.Input as Input
--- import Element.Lazy exposing (lazy)
-
-import Api
 import Browser
 import Browser.Navigation as Nav
 import Element exposing (Element, alignLeft, alignRight, column, el, fill, height, link, padding, px, rgb255, row, text, width)
@@ -12,21 +8,21 @@ import Element.Border as Border
 import Element.Events as Events
 import Element.Font as Font
 import Element.Region as Region
+import Features.Dashboard
 import Features.EditBrand
 import Html exposing (Html)
-import Html.Attributes
 import Json.Decode as Decode exposing (Decoder, field)
-import Json.Decode.Pipeline exposing (custom, optional, required)
+import Json.Decode.Pipeline exposing (required)
 import Ports
-import RemoteData exposing (WebData)
+import Router exposing (Route(..), urlToRoute)
 import Session exposing (User)
 import UI.Buttons as Buttons
 import UI.Colors as Colors
-import UI.Helpers exposing (borderWidth, textEl)
+import UI.Helpers exposing (borderWidth)
+import UI.Spacing exposing (medium, small, xsmall)
 import UI.Typography as Typography
 import Url exposing (Url)
 import Url.Builder as Builder exposing (relative)
-import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 
@@ -34,64 +30,38 @@ import Url.Parser as Parser exposing ((</>), Parser, s)
 
 
 type alias Model =
-    { page : Page
+    { route : Maybe Route
     , key : Nav.Key
     , menuOpen : Bool
     , user : Maybe User
+    , editBrandModel : Features.EditBrand.Model
+    , dashboardModel : Features.Dashboard.Model
     }
 
 
-type Page
-    = Dashboard
-    | EditBrandPage Features.EditBrand.Model
-
-
-type Route
-    = Top
-    | EditBrand
-
-
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
+init _ url key =
     let
         user =
             Nothing
     in
-    ( initialModel url key user, Cmd.none )
+    initialModel key user
+        |> updateUrl url
 
 
-initialModel : Url -> Nav.Key -> Maybe User -> Model
-initialModel url key user =
-    { page = urlToPage url
+initialModel : Nav.Key -> Maybe User -> Model
+initialModel key user =
+    { route = Just Top
     , key = key
     , menuOpen = False
     , user = user
+    , editBrandModel = Features.EditBrand.initialModel
+    , dashboardModel = Features.Dashboard.initialModel
     }
 
 
-urlToPage : Url -> Page
-urlToPage url =
-    case Parser.parse parser url of
-        Just Top ->
-            Dashboard
-
-        Just EditBrand ->
-            EditBrandPage {}
-
-        Nothing ->
-            Dashboard
-
-        _ ->
-            Dashboard
-
-
-checkLogin : Nav.Key -> Maybe User -> Url -> Cmd Msg
-checkLogin key user url =
-    let
-        route : Maybe Route
-        route =
-            Parser.parse parser url
-    in
+checkLogin : Nav.Key -> Maybe User -> Cmd Msg
+checkLogin key user =
     if user == Nothing then
         Nav.pushUrl key (Builder.relative [ "login" ] [])
 
@@ -99,12 +69,23 @@ checkLogin key user url =
         Cmd.none
 
 
-parser : Parser (Route -> a) a
-parser =
-    Parser.oneOf
-        [ Parser.map Top Parser.top
-        , Parser.map EditBrand (s "edit")
-        ]
+updateUrl : Url -> Model -> ( Model, Cmd Msg )
+updateUrl url model =
+    let
+        updatedModel =
+            { model | route = urlToRoute url }
+    in
+    case updatedModel.route of
+        Just (EditBrand _) ->
+            Features.EditBrand.init model.editBrandModel
+                |> toEditBrand updatedModel
+
+        Just Top ->
+            Features.Dashboard.init model.dashboardModel
+                |> toDashboard updatedModel
+
+        Nothing ->
+            ( model, Cmd.none )
 
 
 
@@ -115,15 +96,12 @@ type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
     | ShowMenu
-    | GotEditBrandMsg Features.EditBrand.Msg
+    | EditBrandMsg Features.EditBrand.Msg
+    | DashboardMsg Features.Dashboard.Msg
     | OnError String
     | OpenAuthModal
     | UserLogin (Maybe User)
     | UserLogout
-
-
-
--- | CheckedAuth (WebData String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -138,27 +116,15 @@ update msg model =
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
         ChangedUrl url ->
-            ( { model | page = urlToPage url, menuOpen = False }, checkLogin model.key model.user url )
+            ( { model | route = urlToRoute url, menuOpen = False }, checkLogin model.key model.user )
 
         ShowMenu ->
             ( { model | menuOpen = not model.menuOpen }, Cmd.none )
-
-        GotEditBrandMsg editBrandMsg ->
-            case model.page of
-                EditBrandPage editBrandModel ->
-                    toEditBrand model (Features.EditBrand.update editBrandMsg editBrandModel)
-
-                _ ->
-                    ( model, Cmd.none )
 
         OpenAuthModal ->
             ( model, Ports.openAuthModal () )
 
         UserLogin user ->
-            let
-                _ =
-                    Debug.log "user" user
-            in
             ( { model | user = user }, Cmd.none )
 
         UserLogout ->
@@ -167,11 +133,26 @@ update msg model =
         OnError error ->
             ( model, Cmd.none )
 
+        EditBrandMsg editBrandMsg ->
+            Features.EditBrand.update editBrandMsg model.editBrandModel
+                |> toEditBrand model
+
+        DashboardMsg dashboardMsg ->
+            Features.Dashboard.update dashboardMsg model.dashboardModel
+                |> toDashboard model
+
 
 toEditBrand : Model -> ( Features.EditBrand.Model, Cmd Features.EditBrand.Msg ) -> ( Model, Cmd Msg )
-toEditBrand model ( editBrand, cmd ) =
-    ( { model | page = EditBrandPage editBrand }
-    , Cmd.map GotEditBrandMsg cmd
+toEditBrand model ( editBrandModel, editBrandMsg ) =
+    ( { model | editBrandModel = editBrandModel }
+    , Cmd.map EditBrandMsg editBrandMsg
+    )
+
+
+toDashboard : Model -> ( Features.Dashboard.Model, Cmd Features.Dashboard.Msg ) -> ( Model, Cmd Msg )
+toDashboard model ( dashboardModel, dashboardMsg ) =
+    ( { model | dashboardModel = dashboardModel }
+    , Cmd.map DashboardMsg dashboardMsg
     )
 
 
@@ -220,10 +201,10 @@ titleScreen : Element Msg
 titleScreen =
     Element.column
         [ Element.centerX, height fill ]
-        [ textEl
+        [ Typography.default
             [ Font.bold
             , Font.size 50
-            , padding 25
+            , padding medium
             ]
             "Brandtrics"
         , Element.column
@@ -234,7 +215,7 @@ titleScreen =
             [ Element.image
                 [ width (fill |> Element.maximum 200)
                 , Element.centerX
-                , padding 25
+                , padding medium
                 ]
                 { src = "/logo.svg", description = "Elm Lang Logo" }
             , Typography.h1 [ Element.centerX ] "Your Company Name Here"
@@ -248,12 +229,12 @@ header =
     row
         [ width fill
         , height (px 50)
-        , padding 15
+        , padding small
         , Border.widthEach { borderWidth | bottom = 2 }
         , Background.color Colors.white
         ]
-        [ link [ alignLeft ] { url = "/", label = textEl [ Font.bold ] "Brandtrics" }
-        , textEl
+        [ link [ alignLeft ] { url = "/", label = Typography.default [ Font.bold ] "Brandtrics" }
+        , Typography.default
             [ alignRight
             , Events.onClick ShowMenu
             ]
@@ -267,7 +248,7 @@ menu menuOpen =
         column
             [ Region.navigation
             , Background.color Colors.white
-            , padding 15
+            , padding small
             , width (px 250)
             , Element.moveLeft 250
             , Border.widthEach { borderWidth | left = 2 }
@@ -289,51 +270,24 @@ navLink url label =
     link
         [ Font.center
         , width fill
-        , padding 10
+        , padding xsmall
         ]
         { url = url, label = text label }
 
 
 featureScreen : Model -> Element Msg
 featureScreen model =
-    case model.page of
-        EditBrandPage editBrandModel ->
-            Features.EditBrand.view editBrandModel
-                |> Element.map GotEditBrandMsg
+    case model.route of
+        Just (EditBrand subRoute) ->
+            Features.EditBrand.view subRoute model.editBrandModel
+                |> Element.map EditBrandMsg
 
-        Dashboard ->
-            dashboard
+        Just Top ->
+            Features.Dashboard.view model.dashboardModel
+                |> Element.map DashboardMsg
 
-
-featureButton : String -> String -> Element Msg
-featureButton label url =
-    link
-        [ height (px 150)
-        , width (px 150)
-        , Border.width 1
-        , Background.color Colors.background
-        , Element.htmlAttribute (Html.Attributes.style "marginLeft" "auto")
-        , Element.htmlAttribute (Html.Attributes.style "marginRight" "auto")
-        ]
-        { url = url
-        , label =
-            Element.paragraph
-                [ Font.center ]
-                [ textEl [] label ]
-        }
-
-
-dashboard : Element Msg
-dashboard =
-    Element.wrappedRow
-        [ Element.spacing 50
-        , Element.centerX
-        , Element.centerY
-        , width (fill |> Element.maximum 500)
-        ]
-        [ featureButton "Edit Brand" "/edit"
-        , featureButton "Export Style Guide" "/export"
-        ]
+        Nothing ->
+            Typography.h1 [] "404"
 
 
 subscriptions : Model -> Sub Msg
@@ -362,11 +316,6 @@ authType result =
             Debug.log "authType error" error
                 |> Decode.errorToString
                 |> OnError
-
-
-
--- _ ->
---     Cmd.none
 
 
 type alias AuthAction =
