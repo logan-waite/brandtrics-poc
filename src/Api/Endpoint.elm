@@ -1,4 +1,4 @@
-module Api.Endpoint exposing (Endpoint, authorizeUser, request)
+module Api.Endpoint exposing (Endpoint, firestore, request)
 
 import Http
 import Json.Encode
@@ -23,14 +23,10 @@ request :
     }
     -> Cmd msg
 request config =
-    let
-        _ =
-            Debug.log "request config" config.body
-    in
     Http.request
         { method = config.method
         , headers = config.headers
-        , url = unwrap config.url |> Debug.log "url"
+        , url = unwrap config.url
         , body = config.body
         , expect = config.expect
         , timeout = config.timeout
@@ -42,7 +38,7 @@ request config =
 -- TYPES
 
 
-{-| Get a URL to the Conduit API.
+{-| Get a URL to the API.
 This is not publicly exposed, because we want to make sure the only way to get one of these URLs is from this module.
 -}
 type Endpoint
@@ -54,14 +50,15 @@ unwrap (Endpoint str) =
     str
 
 
-url : List String -> List QueryParameter -> Endpoint
-url paths queryParams =
-    -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
-    -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
-    Url.Builder.crossOrigin "https://conduit.productionready.io"
-        ("api" :: paths)
-        queryParams
-        |> Endpoint
+
+-- url : List String -> List QueryParameter -> Endpoint
+-- url paths queryParams =
+--     -- NOTE: Url.Builder takes care of percent-encoding special URL characters.
+--     -- See https://package.elm-lang.org/packages/elm/url/latest/Url#percentEncode
+--     Url.Builder.crossOrigin "https://conduit.productionready.io"
+--         ("api" :: paths)
+--         queryParams
+--         |> Endpoint
 
 
 function : String -> Endpoint
@@ -76,6 +73,6 @@ function func =
 -- FUNCTIONS
 
 
-authorizeUser : Endpoint
-authorizeUser =
-    function "user-auth"
+firestore : Endpoint
+firestore =
+    function "firestore"

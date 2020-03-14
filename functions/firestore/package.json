@@ -1,0 +1,10 @@
+{
+  "name": "firestore",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/firestore": "^3.7.0",
+    "firebase-admin": "^8.10.0"
+  }
+}

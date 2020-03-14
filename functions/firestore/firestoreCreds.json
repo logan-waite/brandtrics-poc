@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "brandtrics-poc",
+  "private_key_id": "7f92660d25bcbca51a161f0ef21315bb7bc3cba4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCV8EXmFB9mHaN1\nXAruL+0FV387vQRX/88hdx263oZcdkYiyKKUgGyPMPo3sO7G4TCAjgBbzPmWG1li\n7MdDN1Zyu4UWuMO7ePVXQBEU9nYVV+QlMxIQrIZbvVszTbl+r6s82li4yRU/h0nc\ngPOVLotnBUKIh4jt3lroPyExegmZrBiXP04OnsYZEKofTZOJGkkXw8wyJf2kLvuf\nf62H1VXRu8VXStKt66+Z6MDjuw56I/xChXSbj6VxAjQ2TLNIeuuyY2HpikrICcoS\n/oZ56aWKX0guhai4et6tDk7llv2FkxflJ3gdrAIYjWo0rczaXLHgLmrSgb+MMso3\neTeDgedtAgMBAAECggEAGiYgspsAzNjPaIjIWTjff8Z+KIdy6fvxfjcdZrknOpnf\n6nIONJLfG+vhP3QqeGHOiST6uAfb4Utcv+1mZPkSKQk+ETPg4uGZ/ADu2baP6nH9\nFmW9OU41UmuIK77a4la1qPO1dGiRPZaVEZElqfdHlYxryY7FmSJlvUpBOjU71mJS\nQSU1Xh/f7kh1lCblJtHDilhFPO+m/F5CAgqYo3kNylqbQY+nuac2AqolK2g6OIA4\n1+ew8V8BbKG73TKTtf6UKqIFVaFNGk0KINDusMww8NHK1+hKOYv9AgT6KeKoriQE\nrM046TUmlgawuZXQrCzSxVaXVtt6IrOM+ka2N2Ci0QKBgQDHExnwCAz1GqbN0wrz\n0vHD0/7ROIVUeiRqfSQGlkVqZrbZe7tkGbJlC4hYL2lTqm8GK3lVwL76GcGnVjhj\nLeHlnbSVAiDBrfuvwvvLUwaVENWL0dn40SA2URgM2NAo7ZJ2owVPEN8RcQCj2F5S\nb7UR+4QA7MOiTgt4pfioBzLy9QKBgQDA0EF858Fma3NINbeRtTguFqzJ2ezn7GhA\nBhEYgxQvp/pqAvuqLHRXIrGg5nW7YJz58I4oFNa4rQW+dIkqkB1Qo7xc/PHvbPKT\ntsLOdxYX4IrDMGARYl8RoWhn/tlXUGQat2x+whnqgJIlEKvAv0OVliEqMrqy289p\nt6z3DYIHmQKBgHP5qM6xofrY//xAysypQ7e2NWll6CcC0VxIc0hzGxWVqUiiUNVM\nMyWyxke5tz7Kt8t8YD+Y/qltf+ggztDY1hWS/rUgfDzZQxtuGIqnX9pP6FiAdOAD\n1SRPshcp6HsvjHgZGOqrBYl/r8PENY8JDQ/g21I+nOpdVUmAR5B8QS5RAoGAT9vx\nw9IZgFowvU/CYE82naA2oMPqI4T/CMV6fzSLP9HLHe1uXuVaqlxsRcAuMxWo7rx7\npI49APBo2KFbzo0yFxw6ACmj6w6syhGAThN0yx7tWjrHD2w3BA5eN/SOAGQDki02\neqnaIg5ueXuWJ5cQXvx3cAri2QHBvn+c3BZ0LMECgYBA6yrl382s6M5Tw3lKt5rY\niDe9r0s/RHEMIryJ0VCyXgcqiSM1XDCujSWxjgeLlvhbx40x20e1Uz1ySxmrrzng\njASzqaKomN9BA+b+GUOqRBSHuh3RV6lguV6FKwT3TtnAVXGy9SQIv84sKaD6MUcT\nlduLmzP7ndMJqe5IbSYYew==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firestore@brandtrics-poc.iam.gserviceaccount.com",
+  "client_id": "101386627863664547049",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firestore%40brandtrics-poc.iam.gserviceaccount.com"
+}

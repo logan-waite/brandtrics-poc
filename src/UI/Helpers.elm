@@ -1,11 +1,4 @@
-module UI.Helpers exposing (borderWidth, corners, textEl)
-
-import Element exposing (Attribute, Element, el, text)
-
-
-textEl : List (Attribute msg) -> String -> Element msg
-textEl styles string =
-    el styles (text string)
+module UI.Helpers exposing (borderWidth, corners)
 
 
 borderWidth : { bottom : Int, left : Int, right : Int, top : Int }
