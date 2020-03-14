@@ -1,3 +1,3 @@
-// module.exports = {
-//   proxy: "http://localhost:34567"
-// } 
+module.exports = {
+  proxy: "http://localhost:34567"
+} 
