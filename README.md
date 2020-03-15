@@ -2,6 +2,8 @@
 
 This a proof of concept application for brand management. It's built on a serverless stack using Elm and Firebase, and using Netlify for hosting and identity management.
 
+The existing app can currently be found [here](https://condescending-knuth-5f0ba0.netlify.com). You can log in with jim@loganwaite.com (password 'password'), or create your own login. Everything is still very rough around the edges, but it provides a launch pad to get things refined and moving forward.
+
 ## Serverless ##
 ### What is serverless? ###
 Serverless is the idea that you can create an app that doesn't require a server that is always running in the background. It tends to lead to a separation of concerns, where each major part of your app (database, authentication, etc) is offloaded to a separate service. The benefit of this is scalability, where we only pay for what we use, also allows us to mix and max services as we need. Instead of taking the time to build our own and deal with any issues that arise from that, we can just focus on what we want to build and integrate with the other things we need. If we do get to the point were we need something more homegrown, it would, again, just be a matter of building the pieces we need when we need it, instead of doing it all at once up front.
