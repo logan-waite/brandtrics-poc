@@ -8,6 +8,7 @@
   },
   "scripts": {
     "preinstall": "cd ./functions/firestore && yarn install",
+    "build": "elm-app build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generateIcons": "node ./generateIcons.js"
   },
