@@ -2,7 +2,7 @@
 
 This a proof of concept application for brand management. It's built on a serverless stack using Elm and Firebase, and using Netlify for hosting and identity management.
 
-The existing app can currently be found [here](https://condescending-knuth-5f0ba0.netlify.com). You can log in with jim@loganwaite.com (password 'password'), or create your own login. Everything is still very rough around the edges, but it provides a launch pad to get things refined and moving forward.
+The existing app can currently be found [here](https://condescending-knuth-5f0ba0.netlify.com). You can log in with demo@brandtrics.com (password 'password'), or create your own login. Everything is still very rough around the edges, but it provides a launch pad to get things refined and moving forward.
 
 ## Serverless ##
 ### What is serverless? ###
